@@ -1,0 +1,90 @@
+# Service Definition
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service.name: mongodb-lits
+  name: mongodb-lits
+  namespace: staging-ragdoll
+spec:
+  ports:
+    - name: "mongo-lit-port"
+      port: 27020
+      targetPort: mongo-lit-port
+  selector:
+    deployment.name: mongodb-lits
+
+---
+
+# Deployment Definition
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    deployment.name: mongodb-lits
+  name: mongodb-lits
+  namespace: staging-ragdoll
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment.name: mongodb-lits
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        deployment.name: mongodb-lits
+    spec:
+      containers:
+        - image: mongo:7.0.2
+          name: mongodb-lits
+          ports:
+            - containerPort: 27017
+              name: mongo-lit-port
+          volumeMounts:
+            - mountPath: /data/db-lits
+              name: mongodb-lits-claim
+      restartPolicy: Always
+      volumes:
+        - name: mongodb-lits-claim
+          persistentVolumeClaim:
+            claimName: mongodb-lits-claim
+
+---
+
+# Persistent Volume Definition
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongo-lits-volume
+  namespace: staging-ragdoll
+  labels:
+    type: local
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/db-lits"
+
+---
+
+# Persistent Volume Claim Definition
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    persistentvolumeclaim.name: mongodb-lits-claim
+  name: mongodb-lits-claim
+  namespace: staging-ragdoll
+spec:
+  volumeName: mongo-lits-volume
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

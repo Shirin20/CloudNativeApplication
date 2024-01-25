@@ -1,0 +1,55 @@
+<h1>Litter box</h1>
+
+<% if (locals.loggedIn) { %>
+  <div class="lit-form-container">
+    <form action="/litter-box/create" method="POST">
+      <div class="lit-form">
+  
+        <div class="input-element" id="lit-input-element">
+          <label for="lit">Create new lit:</label>
+          <input type="text" name="lit" class="lit" maxlength="42" required>
+        </div>
+        
+        <button type="submit">Create</button>
+  
+      </div>
+    </form>
+  </div>
+  
+
+  <div class="lits">
+    <% if (viewData?.lits?.length) { %>
+      <div class="lits-container">
+      <% viewData.lits.forEach( lit => { %>
+        <div class="lit-wrapper">
+          <p class="lit-text"><%= lit.litText %></p>
+          <p class="published-by">Published by user: <b><%= lit.username %></b></p>
+          <p class="published-at"><%= lit.createdAt %></p>
+          <div class="pedigree-link">
+            <form action="/pedigree/search" method="POST">
+              <input type="text" value="<%= lit.username %>" name="username" class="username" maxlength="100" style="display: none">              
+              <button class="pedigree-link-btn" type="submit">Go to user pedigree</button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+      </div>
+    <% } %> 
+</div>
+
+  <% } %>
+
+  <% if (!locals.loggedIn) { %>
+    <div class="lit-not-logged-in">
+      <h2>Log in to see your litterbox</h2>
+    </div>
+  <% } %>
+
+  <template id="lits-template" class="lits-container">
+    <div class="lit-wrapper">
+      <p class="lit-text"></p>
+      <p class="published-by">Published by user: <b></b></p>
+      <p class="published-at"></p>
+      <div class="pedigree-link"></div>
+    </div>
+  </template>

@@ -1,0 +1,82 @@
+apiVersion: skaffold/v4beta7
+kind: Config
+metadata:
+  name: k8s-web-application
+build:
+  tagPolicy:
+    gitCommit:
+      variant: CommitSha
+  artifacts:
+      - image: gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/litter
+        context: litter-service
+        docker:
+         dockerfile: Dockerfile.production
+      - image: gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/auth
+        context: auth-service
+        docker:
+          dockerfile: Dockerfile.production
+      - image: gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/pedigree
+        context: pedigree-service
+        docker:
+          dockerfile: Dockerfile.production
+      - image: gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/lits
+        context: lits-service
+        docker:
+          dockerfile: Dockerfile.production
+manifests:
+  rawYaml:
+    - k8s/ingress/ingress.yaml # 0
+    - k8s/litter-service/litter.yaml # 1
+    - k8s/auth-service/auth.yaml # 2
+    - k8s/auth-service/mongodb.yaml # 3
+    - k8s/pedigree-service/pedigree.yaml # 4
+    - k8s/pedigree-service/mongodb-pedigree.yaml # 5
+    - k8s/lits-service/lits.yaml # 6
+    - k8s/litter-service/redis.yaml # 7
+    - k8s/config/rabbit-data-configmap.yaml # 8
+    # - k8s/lits-service/mongodb-lits.yaml # 9
+deploy:
+  kubectl: {}
+
+# Production profile
+# A slightly modyfied ingress configuration needed in production.
+profiles:
+- name: staging
+  patches:
+  - op: replace 
+    path: /manifests/rawYaml/0  # JSON Pointer to ingress.yaml
+    value: k8s/ingress/ingress.staging.yaml  # The value for the ingressClassName field is added in this one
+  - op: replace
+    path: /manifests/rawYaml/1  # JSON Pointer to litter.staging.yaml
+    value: k8s/litter-service/litter.staging.yaml  # The value for the ingressClassName field is added in this one
+  - op: replace
+    path: /manifests/rawYaml/2  # JSON Pointer to auth.staging.yaml
+    value: k8s/auth-service/auth.staging.yaml  # The value for the ingressClassName field is added in this one
+  - op: replace
+    path: /manifests/rawYaml/3  # JSON Pointer to mongodb.staging.yaml
+    value: k8s/auth-service/mongodb.staging.yaml  # The value for the ingressClassName field is added in this one
+  - op: replace
+    path: /manifests/rawYaml/4  # JSON Pointer to pedigree.staging.yaml
+    value: k8s/pedigree-service/pedigree.staging.yaml  # The value for the ingressClassName field is added in this one
+  - op: replace
+    path: /manifests/rawYaml/5  # JSON Pointer to mongodb-pedigree.staging.yaml
+    value: k8s/pedigree-service/mongodb-pedigree.staging.yaml  # The value for the ingressClassName field is added in this one
+  - op: replace
+    path: /manifests/rawYaml/6  # JSON Pointer to lits.staging.yaml
+    value: k8s/lits-service/lits.staging.yaml  # The value for the ingressClassName field is added in this one
+  - op: replace
+    path: /manifests/rawYaml/7  # JSON Pointer to redis.staging.yaml
+    value: k8s/litter-service/redis.staging.yaml  # The value for the ingressClassName field is added in this one
+  - op: replace
+    path: /manifests/rawYaml/8  # JSON Pointer to rabbit-data-configmap.staging.yaml
+    value: k8s/config/rabbit-data-configmap-staging.yaml  # The value for the ingressClassName field is added in this one
+  # - op: replace
+  #   path: /manifests/rawYaml/9  # JSON Pointer to mongodb-lits.staging.yaml
+  #   value: k8s/lits-service/mongodb-lits.staging.yaml  # The value for the ingressClassName field is added in this one
+
+- name: production
+  patches:
+  - op: replace 
+    path: /manifests/rawYaml/0  # JSON Pointer to ingress.yaml
+    value: k8s/ingress/ingress.staging.yaml  # The value for the ingressClassName field is added in this one
+

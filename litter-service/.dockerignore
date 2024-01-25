@@ -1,0 +1,9 @@
+# Exclude all files and directories!
+*
+
+# Explicitly include
+!public
+!src
+!nodemon.json
+!package-lock.json
+!package.json

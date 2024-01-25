@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbit-data-configmap
+  namespace: staging-ragdoll
+data:
+    rabbit-port: "5672"
+    rabbit-host-name: "my-rabbitmq"
+    rabbit-queue-name: "slack"
+    rabbit-username: "user"

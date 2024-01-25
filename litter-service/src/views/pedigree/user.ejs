@@ -1,0 +1,45 @@
+<div class="pedigree-navbar">
+  <% if (viewData?.user && !viewData.isOwner && viewData.follows) { %>
+    <form action="/pedigree/unleash/<%= viewData.pedigreeOwner.id %>" method="POST">
+      <button type=submit>Unleash this kitty</button>
+  </form>
+  <% } else if (viewData?.user && !viewData.isOwner && !viewData.follows) { %>
+    <form action="/pedigree/leash/<%= viewData.pedigreeOwner.id %>" method="POST">
+      <button type="submit">Put a leash on this kitty</button>
+    </form>   
+  <% } %>
+</div>
+
+<div class="name-header">
+  <div class="pedigree-owner">
+    <h3>pegigree chart for: </h3>
+    <h1><%= viewData.pedigreeOwner.username %></h1>
+  </div>
+  <div class="favorite-cat">
+    <h3>favorite cat: </h3>
+    <% if (viewData.pedigreeOwner?.favoriteCat) { %>
+      <h1><%= viewData.pedigreeOwner.favoriteCat %></h3>
+    <% } else { %> 
+      <h1>I might be a dog person...</h1> 
+    <% } %>
+  </div>
+</div>
+
+<div class="lits">
+  <% if (viewData?.lits?.length) { %>
+    <div class="lits-container">
+    <% viewData.lits.forEach( lit => { %>
+      <div class="lit-wrapper">
+        <p class="lit-text"><%= lit.litText %></p>
+        <p class="published-at"><%= lit.createdAt %> </p>
+      </div>
+    <% }) %>
+    </div>
+
+  <% } else { %>
+    <div class="no-lits">
+      <p>This user has not posted any lits!</p>
+    </div>
+  </ul>
+  <% } %> 
+</div>

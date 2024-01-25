@@ -1,0 +1,90 @@
+# Service Definition
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service.name: mongodb-pedigree
+  name: mongodb-pedigree
+  namespace: staging-ragdoll
+spec:
+  ports:
+    - name: "mongo-ped-port"  
+      port: 27019
+      targetPort: mongo-ped-port  
+  selector:
+    deployment.name: mongodb-pedigree
+
+---
+
+# Deployment Definition
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    deployment.name: mongodb-pedigree
+  name: mongodb-pedigree
+  namespace: staging-ragdoll
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment.name: mongodb-pedigree
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        deployment.name: mongodb-pedigree
+    spec:
+      containers:
+        - image: mongo:7.0.2
+          name: mongodb-pedigree
+          ports:
+            - containerPort: 27017
+              name: mongo-ped-port  
+          volumeMounts:
+            - mountPath: /data/db
+              name: mongodb-pedigree-claim
+      restartPolicy: Always
+      volumes:
+        - name: mongodb-pedigree-claim
+          persistentVolumeClaim:
+            claimName: mongodb-pedigree-claim
+
+---
+
+# Persistent Volume Definition
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongo-pedigree-volume
+  namespace: staging-ragdoll
+  labels:
+    type: local
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/db-pedigree
+
+---
+
+# Persistent Volume Claim Definition
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    persistentvolumeclaim.name: mongodb-pedigree-claim
+  name: mongodb-pedigree-claim
+  namespace: staging-ragdoll
+spec:
+  volumeName: mongo-pedigree-volume
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

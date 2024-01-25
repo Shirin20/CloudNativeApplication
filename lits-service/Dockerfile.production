@@ -1,0 +1,20 @@
+FROM node:20.8.0-bullseye-slim
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json to the container
+COPY package*.json ./
+
+# Installs the dependencies in a way that's optimized for production.
+# The --omit=dev flag ensures that devDependencies are not installed.
+RUN npm ci --only=production --omit=dev
+
+# Copy the rest of the application code to the container
+COPY src/ src/
+
+# Expose a port for the application to listen on (e.g., 3000)
+EXPOSE 3003
+
+# Define the command to run your application
+CMD ["node", "src/server.js"]

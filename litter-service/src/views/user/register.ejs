@@ -1,0 +1,28 @@
+<h1>Register User</h1>
+
+<form action="/user/register" method="POST">
+  <div class="user-form">
+
+    <div class="input-element">
+      <label for="username">Username:</label>
+      <input type="text" name="username" class="username" maxlength="100" required>
+    </div>
+    
+    <div class="input-element">
+      <label for="email">Email:</label>
+      <input type="text" name="email" class="email" maxlength="100" required>
+    </div>
+    
+    <div class="input-element">
+      <label for="password">Password:</label>
+      <input type="password" name="password" class="password" minlength="10" maxlength="500" required>
+    </div>
+
+    <div class="input-element">
+      <label for="favoriteCat">Favorite cat:</label>
+      <input type="text" name="favoriteCat" class="favoriteCat" maxlength="100">
+    </div>
+    
+    <button type="submit">Register</button>
+  </div>
+</form>

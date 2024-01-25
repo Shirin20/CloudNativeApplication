@@ -1,0 +1,22 @@
+<header>
+  <div class="litter-title">
+    <img src="./img/litter-cat-symbol.png" alt="litter-symbol" width="100px;">
+    <h1>LITTER</h1>
+  </div>
+  
+
+  <div class="nav-bar-header">
+    <a href="/pedigree/search"><button>Search user</button></a>
+    <% if (locals.loggedIn) { %>
+      <a href="/litter-box"><button>Litterbox</button></a>
+    <% } %>
+    <% if (!locals.loggedIn) { %>
+      <a href="/user/register"><button>Register</button></a>
+      <a href="/user/login"><button>Login</button></a>
+    <% } else if (locals.loggedIn) { %>
+      <a href="/pedigree"><button>My pedigree</button></a>
+      <a href="/user/logout"><button>Logout</button></a>
+    <% } %>
+  </div>
+    
+</header>

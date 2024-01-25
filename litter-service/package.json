@@ -1,0 +1,40 @@
+{
+  "name": "project-litter",
+  "version": "1.0.0",
+  "description": "Litter is a microblog with a strict focus on simplicity and performance",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon --inspect --env-file=.env src/server.js",
+    "lint": "npx eslint ./src || exit 0",
+    "lint:fix": "npx eslint ./src --fix || exit 0",
+    "test": "npx --node-options=--experimental-vm-modules jest --verbose --coverage --all || exit 0"
+  },
+  "author": "Ragdoll",
+  "license": "ISC",
+  "dependencies": {
+    "@lnu/json-js-cycle": "^2.0.5",
+    "amqplib": "^0.10.3",
+    "connect-redis": "^5.0.0",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-ejs-layouts": "^2.5.1",
+    "express-http-context": "^1.2.4",
+    "express-session": "^1.17.3",
+    "http-errors": "^2.0.0",
+    "mongoose": "^7.5.0",
+    "morgan": "^1.10.0",
+    "redis": "^3.0.2",
+    "socket.io": "^4.7.3",
+    "winston": "^3.10.0",
+    "winston-mongodb": "^5.1.1"
+  },
+  "devDependencies": {
+    "@lnu/eslint-config": "^1.1.10",
+    "nodemon": "^3.0.1"
+  }
+}

@@ -1,0 +1,5 @@
+<% if (locals.flash && (locals.flash.name === 'UserError' || locals.flash.type === 'success')) { %>
+<div class="alert alert-<%= flash.type %>">
+  <%= flash.text %>
+</div>
+<% } %>

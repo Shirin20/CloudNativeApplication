@@ -1,0 +1,78 @@
+# This service is created to be able to tunnel in to MongoDB in development. In production the ingress server
+# should not expose this service.
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service.name: mongodb
+  name: mongodb
+spec:
+  ports:
+    - name: "27018"
+      port: 27018
+      targetPort: mongo-port
+  selector: # Selects the pods that this Service will route traffic to, based on the labels of the pods.
+    deployment.name: mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    deployment.name: mongodb
+  name: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment.name: mongodb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        deployment.name: mongodb
+    spec:
+      containers:
+        - image: mongo:7.0.2
+          name: mongodb
+          ports:
+            - containerPort: 27017
+              name: mongo-port
+          volumeMounts:
+            - mountPath: /data/db
+              name: mongodb-claim
+      restartPolicy: Always
+      volumes:
+        - name: mongodb-claim
+          persistentVolumeClaim:
+            claimName: mongodb-claim
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongo-volume-production
+  labels:
+    type: local
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/db"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    persistentvolumeclaim.name: mongodb-claim
+  name: mongodb-claim
+spec:
+  volumeName: mongo-volume-production
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

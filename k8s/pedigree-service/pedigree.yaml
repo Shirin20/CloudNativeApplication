@@ -1,0 +1,48 @@
+# litter.yaml production environment
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service.name: pedigree
+  name: pedigree
+spec:
+  ports:
+    - name: "pedigree-port"
+      port: 8890
+      targetPort: pedigree-http
+  selector:
+    deployment.name: pedigree
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pedigree
+spec:
+  replicas: 1 # Update to 3 to get stateful proplems. Look at flash messages.
+  selector:
+    matchLabels:
+      deployment.name: pedigree
+  template:
+    metadata:
+      labels:
+        deployment.name: pedigree
+    spec:
+      containers:
+      - name: pedigree
+        image: gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/pedigree
+        env:
+        - name: DB_CONNECTION_STRING
+          value: "mongodb://mongodb-pedigree:27019/pedigree"
+        - name: ACCESS_TOKEN_PUBLIC
+          valueFrom:
+            secretKeyRef:
+              name: auth-keys
+              key: publicKey 
+        - name: PORT
+          value: "3002"
+        ports:
+          - containerPort: 3002
+            name: pedigree-http
+      imagePullSecrets:
+       - name: regcred # Secret set as a secret in the cluster
+

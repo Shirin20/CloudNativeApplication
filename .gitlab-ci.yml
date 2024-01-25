@@ -1,0 +1,171 @@
+# This file is a template, and might need editing before it works on your project.
+# This is a sample GitLab CI/CD configuration file that should run without any modifications.
+# It demonstrates a basic 3 stage CI/CD pipeline. Instead of real tests or scripts,
+# it uses echo commands to simulate the pipeline execution.
+#
+# A pipeline is composed of independent jobs that run scripts, grouped into stages.
+# Stages run in sequential order, but jobs within stages run in parallel.
+#
+# For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
+#
+# You can copy and paste this template into a new `.gitlab-ci.yml` file.
+# You should not add this template to an existing `.gitlab-ci.yml` file by using the `include:` keyword.
+#
+# To contribute improvements to CI/CD templates, please follow the Development guide at:
+# https://docs.gitlab.com/ee/development/cicd/templates.html
+# This specific template is located at:
+# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
+
+stages:          # List of stages for jobs, and their order of execution
+  - build
+  - test
+  - staging
+  - deploy
+
+build-litter:       # This job runs in the build stage, which runs first.
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.9.0-debug
+    entrypoint: [""]
+  script:  # See https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/litter-service"  
+      --dockerfile "${CI_PROJECT_DIR}/litter-service/Dockerfile.production"
+      --destination "${CI_REGISTRY_IMAGE}/litter:${CI_COMMIT_TAG:-latest}"           # Tags with "latest" if untagged commit.
+
+build-auth:       # This job runs in the build stage, which runs first.
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.9.0-debug
+    entrypoint: [""]
+  script:  # See https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/auth-service"  
+      --dockerfile "${CI_PROJECT_DIR}/auth-service/Dockerfile.production"
+      --destination "${CI_REGISTRY_IMAGE}/auth:${CI_COMMIT_TAG:-latest}"            # Tags with "latest" if untagged commit.
+      
+build-pedigree:       # This job runs in the build stage, which runs first.
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.9.0-debug
+    entrypoint: [""]
+  script:  # See https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/pedigree-service"  
+      --dockerfile "${CI_PROJECT_DIR}/pedigree-service/Dockerfile.production"
+      --destination "${CI_REGISTRY_IMAGE}/pedigree:${CI_COMMIT_TAG:-latest}"            # Tags with "latest" if untagged commit.
+
+build-lits:       # This job runs in the build stage, which runs first.
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.9.0-debug
+    entrypoint: [""]
+  script:  # See https://docs.gitlab.com/ee/ci/docker/using_kaniko.html
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/lits-service"  
+      --dockerfile "${CI_PROJECT_DIR}/lits-service/Dockerfile.production"
+      --destination "${CI_REGISTRY_IMAGE}/lits:${CI_COMMIT_TAG:-latest}"            # Tags with "latest" if untagged commit.
+
+litter-service-test:
+  stage: test
+  image: node
+  before_script:
+    - npm install jest
+    - npm install http-errors
+  script: 
+    - echo "Running unit tests... "
+    - cd litter-service
+    # - npm test || exit 1
+    - npx --node-options=--experimental-vm-modules jest --verbose --coverage --all --bail || exit 1
+
+pedigree-service-test:
+  stage: test
+  image: node
+  before_script:
+    - cd pedigree-service
+    - npm install
+    - npm install --save-dev @babel/cli @babel/preset-env babel-jest jest http-errors
+  script: 
+    - echo "Running unit tests for pedigree-service..."
+    - npx babel src --out-dir lib --presets=@babel/preset-env
+    - npx jest --verbose --coverage --all --bail || exit 1
+
+lits-service-test:
+  stage: test
+  image: node
+  before_script:
+    - cd lits-service
+    - npm install
+    - npm install --save-dev @babel/cli @babel/preset-env babel-jest jest http-errors
+  script: 
+    - echo "Running unit tests for lits-service..."
+    - npx babel src --out-dir lib --presets=@babel/preset-env
+    - npx jest --verbose --coverage --all --bail || exit 1
+
+auth-service-test:
+  stage: test
+  image: node
+  before_script:
+    - cd auth-service
+    - npm install
+    - npm install --save-dev @babel/cli @babel/preset-env babel-jest jest http-errors
+  script: 
+    - echo "Running unit tests for auth-service..."
+    - npx babel src --out-dir lib --presets=@babel/preset-env
+    - npx jest --verbose --coverage --all --bail || exit 1
+
+# lint-test-job:   # This job also runs in the test stage.
+#   stage: test    # It can run at the same time as unit-test-job (in parallel).
+#   script:
+#     - echo "Linting code... This will take about 10 seconds."
+#     - sleep 10
+#     - echo "No lint issues found."
+
+staging-ragdoll:
+  stage: staging
+  image: 
+    name: gcr.io/k8s-skaffold/skaffold:v2.8.0
+    entrypoint: ['']
+  environment:
+    name: staging-ragdoll
+    url: $LITTER_URL_STAGING # Set as environment variable. URL to your load balancer. Ie HTTP://cscloud6-25.lnu.se
+  when: manual
+  script:
+    - kubectl config get-contexts
+    - kubectl config use-context $K8S_CONTEXT
+
+    - kubectl delete secret regcred --namespace=staging-ragdoll || true
+    - kubectl create secret docker-registry regcred --docker-server=$CI_REGISTRY --docker-username=$CI_DEPLOY_USER --docker-password=$CI_DEPLOY_PASSWORD --namespace=staging-ragdoll
+
+    - skaffold deploy --profile staging --images gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/litter:${CI_COMMIT_TAG:-latest},gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/auth:${CI_COMMIT_TAG:-latest},gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/pedigree:${CI_COMMIT_TAG:-latest},gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/lits:${CI_COMMIT_TAG:-latest}
+    - kubectl config set-context --current --namespace=staging-ragdoll
+
+
+   # Debugging outputs after completion - WILL FIND ONLY DEFAULT  
+    - kubectl get deployments
+    - kubectl get pods
+    - kubectl get services
+
+deploy:
+  stage: deploy
+  image:
+    name: gcr.io/k8s-skaffold/skaffold:v2.8.0
+    entrypoint: ['']
+  environment:
+    name: default
+    url: $LITTER_URL # Set as environment variable. URL to your load balancer. Ie HTTP://cscloud6-25.lnu.se
+  when: manual
+  script:
+    - kubectl config get-contexts
+    - kubectl config use-context $K8S_CONTEXT
+
+    - kubectl delete secret regcred || true
+    - kubectl create secret docker-registry regcred --docker-server=$CI_REGISTRY --docker-username=$CI_DEPLOY_USER --docker-password=$CI_DEPLOY_PASSWORD
+    
+    - skaffold deploy --profile production --images gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/litter:${CI_COMMIT_TAG:-latest},gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/auth:${CI_COMMIT_TAG:-latest},gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/pedigree:${CI_COMMIT_TAG:-latest},gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/lits:${CI_COMMIT_TAG:-latest}
+    - kubectl config set-context --current --namespace=default
+
+   # Debugging outputs after completion - right namespace set above  
+    - kubectl get deployments
+    - kubectl get pods
+    - kubectl get services

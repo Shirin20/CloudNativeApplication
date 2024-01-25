@@ -1,0 +1,50 @@
+# litter.yaml production environment
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service.name: auth
+  name: auth
+  # namespace: production-ragdoll
+spec:
+  ports:
+    - name: "auth-port"
+      port: 8889
+      targetPort: auth-http
+  selector:
+    deployment.name: auth
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+  # namespace: production-ragdoll
+spec:
+  replicas: 1 # Update to 3 to get stateful proplems. Look at flash messages.
+  selector:
+    matchLabels:
+      deployment.name: auth
+  template:
+    metadata:
+      labels:
+        deployment.name: auth
+    spec:
+      containers:
+      - name: auth
+        image: gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/auth
+        env:
+        - name: DB_CONNECTION_STRING
+          value: "mongodb://mongodb:27018/auth"
+        - name: ACCESS_TOKEN_PRIVATE
+          valueFrom:
+            secretKeyRef:
+              name: auth-keys
+              key: privateKey
+        - name: PORT
+          value: "3001"
+        ports:
+          - containerPort: 3001
+            name: auth-http
+      imagePullSecrets:
+       - name: regcred # Secret set as a secret in the cluster
+

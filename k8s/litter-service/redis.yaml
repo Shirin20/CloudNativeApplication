@@ -1,0 +1,78 @@
+# Redis Service for other pods to communicate with Redis
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service.name: redis
+  name: redis
+spec:
+  ports:
+    - name: "6379"
+      port: 6379
+      targetPort: redis-port
+  selector:
+    deployment.name: redis
+
+---
+
+# Redis Deployment to manage the Redis pod(s)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    deployment.name: redis
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment.name: redis
+  template:
+    metadata:
+      labels:
+        deployment.name: redis
+    spec:
+      containers:
+        - image: redis:7.2.3
+          name: redis
+          ports:
+            - containerPort: 6379
+              name: redis-port
+          volumeMounts:
+            - mountPath: /data/redis
+              name: redis-claim
+      volumes:
+        - name: redis-claim
+          persistentVolumeClaim:
+            claimName: redis-claim
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redis-volume-production
+  labels:
+    type: local
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 100Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/redis"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    persistentvolumeclaim.name: redis-claim
+  name: redis-claim
+spec:
+  volumeName: redis-volume-production
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

@@ -1,0 +1,82 @@
+# litter.staging.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service.name: litter
+  name: litter
+  namespace: staging-ragdoll
+spec:
+  ports:
+    - name: "litter-port"
+      port: 8888
+      targetPort: litter-http
+  selector:
+    deployment.name: litter
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litter
+  namespace: staging-ragdoll
+spec:
+  replicas: 1 # Update to 3 to get stateful proplems. Look at flash messages.
+  selector:
+    matchLabels:
+      deployment.name: litter
+  template:
+    metadata:
+      labels:
+        deployment.name: litter
+    spec:
+      containers:
+      - name: litter
+        image: gitlab.lnu.se:5050/2dv013/student/team-2023-02-ragdoll/project-litter/litter
+        # image: gitlab.lnu.se:5050/2dv013/student/sm223qi/part2-architecture/just-task-it-featuring-logging/litter # Update to your project url
+        env:
+        - name: AUTH_REGISTER_STRING
+          value: "http://auth:8889/api/v1/register"
+        - name: AUTH_LOGIN_STRING
+          value: "http://auth:8889/api/v1/login"
+        - name: PEDIGREE_BASE_URL
+          value: "http://pedigree:8890/api/v1"
+        - name: LITS_BASE_URL
+          value: "http://lits:8891/api/v1"
+        - name: AUTH_SEARCH_STRING
+          value: "http://auth:8889/api/v1/search"
+        - name: RABBITMQ_PROTOCOL
+          value: "amqp"
+        - name: RABBITMQ_HOST
+          value: "my-rabbitmq"
+        - name: RABBITMQ_PORT
+          value: "5672"
+        - name: RABBITMQ_USERNAME
+          value: "user"
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: my-rabbitmq
+              key: rabbitmq-password
+        - name: RABBITMQ_QUEUE_NAME
+          value: "notificationQueue"
+        - name: REDIS_HOST
+          value: redis 
+        - name: REDIS_PORT
+          value: "6379"
+        - name: PORT
+          value: "3000"
+        - name: BASE_URL
+          value: "/"
+        - name: SESSION_NAME
+          value: "session"
+        - name: SESSION_SECRET
+          valueFrom:
+              secretKeyRef:
+                name: session
+                key: session-secret
+        ports:
+          - containerPort: 3000
+            name: litter-http
+      imagePullSecrets:
+       - name: regcred # Secret set as a secret in the cluster
+
