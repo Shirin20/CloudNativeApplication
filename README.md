@@ -16,7 +16,7 @@ This project was developed by a group of students:
 
 ## Project architecture  
 
-![Project Overview](projectArchitecture)
+![Project Overview](projectArchitecture.png)
 
 ## Installation and Usage
 
