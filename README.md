@@ -14,14 +14,14 @@ This project was developed by a group of students:
 
 [Provide a brief description of the project, its features, and its intended use case.]
 
+## Project architecture  
+
+![Project Overview](projectArchitecture)
+
 ## Installation and Usage
 
-[Instructions for installing and using the application.]
+To get started with the project, clone the repository and install its dependencies:
 
-## Contributing
-
-[Information on how others can contribute to the project, if applicable.]
-
-## License
-
-[Details about the software license.]
+```bash
+git clone https://github.com/CloudNativeApplication.git
+``` 
