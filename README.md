@@ -7,8 +7,8 @@
 This project was developed by a group of students:
 
 - **Shirin Meirkhan**
-- **Caroline Åkesson**:
-- **Emma Fransson**:
+- **[Caroline Åkesson](https://github.com/violacaroline)**
+- **[Emma Fransson](https://github.com/emmbryo)**
 
 ## Project Overview
 
