@@ -20,9 +20,13 @@ This project was developed by a group of students:
 
 ## Project design  
 
-![Litter-box](Litter-box.png)
-![Project-newUser](project-newUser.png)
-![project-login](project-login.png)
+![Litter-box](Litter-box.png)  
+
+   
+![Project-newUser](project-newUser.png)   
+
+    
+![project-login](Projekt-login.png)
 
 ## Installation and Usage
 
