@@ -16,7 +16,13 @@ This project was developed by a group of students:
 
 ## Project architecture  
 
-![Project Overview](projectArchitecture.png)
+![Project Overview](projectArchitecture.png)  
+
+## Project design  
+
+![Litter-box](Litter-box.png)
+![Project-newUser](project-newUser.png)
+![project-login](project-login.png)
 
 ## Installation and Usage
 
